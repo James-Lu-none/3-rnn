@@ -57,7 +57,32 @@ class DataCollatorSpeechSeq2SeqWithPadding:
         }
 
         return batch
+    
+def levenshtein(a: str, b: str) -> int:
+    """Compute character-level Levenshtein distance."""
+    m, n = len(a), len(b)
 
+    if m == 0:
+        return n
+    if n == 0:
+        return m
+
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if a[i - 1] == b[j - 1] else 1
+            dp[i][j] = min(
+                dp[i - 1][j] + 1,        # deletion
+                dp[i][j - 1] + 1,        # insertion
+                dp[i - 1][j - 1] + cost  # substitution
+            )
+    return dp[m][n]
 class AudioDataset(Dataset):
 
     def __init__(self, dataframe, audio_dir, processor, max_length=40):
@@ -198,7 +223,7 @@ class Train:
             logging_dir="./logs",
 
             load_best_model_at_end=True,
-            metric_for_best_model="wer",
+            metric_for_best_model="levenshtein",
             greater_is_better=False,
 
             fp16=True,
@@ -208,9 +233,7 @@ class Train:
             generation_max_length=225,
             push_to_hub=False,
         )
-
-        wer_metric = evaluate.load("wer")
-
+        
         def compute_metrics(pred):
             pred_ids = pred.predictions
             label_ids = pred.label_ids
@@ -220,9 +243,15 @@ class Train:
             pred_str = self.processor.tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
             label_str = self.processor.tokenizer.batch_decode(label_ids, skip_special_tokens=True)
 
-            wer = wer_metric.compute(predictions=pred_str, references=label_str)
+            distances = []
+            for p, r in zip(pred_str, label_str):
+                dist = levenshtein(p, r)
+                norm = dist / max(1, len(r))  # character-level normalized Levenshtein
+                distances.append(norm)
 
-            return {"wer": wer}
+            mean_lev = float(sum(distances) / len(distances))
+
+            return {"levenshtein": mean_lev}
         data_collator = DataCollatorSpeechSeq2SeqWithPadding(
             processor=self.processor,
             decoder_start_token_id=self.model.config.decoder_start_token_id
@@ -247,9 +276,9 @@ class Train:
 
         timestamp = np.datetime64('now').astype('str').replace(':', '-').replace(' ', '_')
 
-        best_wer = self.trainer.state.best_metric
-        best_wer_str = f"{best_wer:.4f}" if best_wer is not None else "NA"
-        save_dir = f"{MODEL_ROOT}/{self.model_choice}/{timestamp}_{best_wer_str}"
+        best_lev = self.trainer.state.best_metric
+        best_lev_str = f"{best_lev:.4f}" if best_lev is not None else "NA"
+        save_dir = f"{MODEL_ROOT}/{self.model_choice}/{timestamp}_{best_lev_str}"
         print(f"Saving model to {save_dir}...")
         
         os.makedirs(save_dir, exist_ok=True)
