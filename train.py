@@ -256,7 +256,7 @@ class Train:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--model_choice", type=str, default="whisper_runs")
+    parser.add_argument("--model_choice", type=str, required=True)
     args = parser.parse_args()
 
     trainer = Train(
