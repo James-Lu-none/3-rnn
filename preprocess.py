@@ -8,7 +8,7 @@ import nlpaug.flow as naf
 import pandas as pd
 from tqdm import tqdm
 
-InPath = "./data/train/fixed_train"
+InPath = "./data/train/fixed-train"
 InLabelPath = "./data/train/train-toneless.csv"
 
 OutPath = "./data/train/noisy-train"
