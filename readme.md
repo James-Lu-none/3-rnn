@@ -10,7 +10,11 @@ submit score: 9.39393
 [eval with WER & apply lexicon](history/openai_whisper_small_2025-11-07T15-06-55_2025-11-07T19-33-53.csv)
 submit score: 9.87878
 
-eval with normalized Levenshtein distance
+[eval with normalized Levenshtein distance](history/openai_whisper_small_2025-11-08T11-10-10_0.0213_2025-11-08T11-31-15.csv)
+submit score: 8.43434
+
+[eval with normalized Levenshtein distance & apply lexicon]()
+submit score: 
 
 ### openai_whisper_medium
 
