@@ -14,6 +14,29 @@ LEXICON_PATH = "data/train/lexicon.txt"
 
 os.makedirs(OUTPUT_ROOT, exist_ok=True)
 
+@functools.lru_cache(maxsize=50000)
+def levenshtein(a, b):
+    if a == b:
+        return 0
+    if len(a) == 0:
+        return len(b)
+    if len(b) == 0:
+        return len(a)
+
+    dp = list(range(len(b) + 1))
+
+    for i, ca in enumerate(a, 1):
+        prev = dp[:]
+        dp[0] = i
+        for j, cb in enumerate(b, 1):
+            cost = 0 if ca == cb else 1
+            dp[j] = min(
+                prev[j] + 1,
+                dp[j - 1] + 1,
+                prev[j - 1] + cost
+            )
+    return dp[-1]
+
 class prediction:
     def __init__(self, model_dir, use_lexicon=True):
         self.model_dir = model_dir
@@ -57,8 +80,32 @@ class prediction:
         return words
 
     def correct_taiwanese_sentence(self, sentence):
-        # TODO: implement correction mechanism with self.valid_words
-        return sentence
+        if not self.use_lexicon:
+            return sentence
+
+        # normalize
+        sentence = sentence.lower().strip()
+        if not sentence:
+            return ""
+
+        tokens = sentence.split()
+        corrected = []
+
+        for w in tokens:
+            # keep exact match
+            if w in self.valid_words:
+                corrected.append(w)
+                continue
+
+            # fallback: find closest word
+            nearest = min(
+                self.valid_words,
+                key=lambda vw: levenshtein(w, vw)
+            )
+
+            corrected.append(nearest)
+
+        return " ".join(corrected)
 
     def load_model(self, model_dir):
         print(f"Loading model from: {model_dir}")
