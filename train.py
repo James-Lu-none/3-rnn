@@ -18,44 +18,27 @@ MODEL_ROOT = "model"
 @dataclass
 class DataCollatorSpeechSeq2SeqWithPadding:
     processor: Any
-    decoder_start_token_id: int
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> Dict[str, torch.Tensor]:
-        input_features = [feature["input_features"] for feature in features]
-        label_features = [feature["labels"] for feature in features]
-        batch_size = len(input_features)
-        feature_dim = 80
-        max_length = 3000
-        input_features_padded = torch.zeros(batch_size, feature_dim, max_length)
+        # Separate input features and labels
+        input_features = [{"input_features": feature["input_features"]} for feature in features]
+        label_features = [{"input_ids": feature["labels"]} for feature in features]
 
-        for i, features_tensor in enumerate(input_features):
-            actual_feature_dim = features_tensor.shape[0]
-            actual_time_steps = features_tensor.shape[1]
-            copy_feature_dim = min(actual_feature_dim, feature_dim)
-            copy_time_steps = min(actual_time_steps, max_length)
-            input_features_padded[i, :copy_feature_dim, :copy_time_steps] = \
-                features_tensor[:copy_feature_dim, :copy_time_steps]
-        max_label_length = max(len(label) for label in label_features)
+        # Use processor's built-in padding for input features
+        batch = self.processor.feature_extractor.pad(input_features, return_tensors="pt")
+        # Use tokenizer's built-in padding for labels (creates attention_mask)
+        labels_batch = self.processor.tokenizer.pad(label_features, return_tensors="pt")
 
-        labels_padded = []
-        for label in label_features:
-            padding_length = max_label_length - len(label)
-            padded_label = torch.cat([
-                label,
-                torch.full((padding_length,), -100, dtype=label.dtype)
-            ])
-            labels_padded.append(padded_label)
+        # Replace padding with -100 to ignore loss correctly
+        labels = labels_batch["input_ids"].masked_fill(
+            labels_batch.attention_mask.ne(1), -100
+        )
 
-        labels = torch.stack(labels_padded)
-
-        if (labels[:, 0] == self.decoder_start_token_id).all():
+        # Remove BOS token if present at the start
+        if (labels[:, 0] == self.processor.tokenizer.bos_token_id).all().cpu().item():
             labels = labels[:, 1:]
 
-        batch = {
-            "input_features": input_features_padded,
-            "labels": labels
-        }
-
+        batch["labels"] = labels
         return batch
     
 def levenshtein(a: str, b: str) -> int:
@@ -98,15 +81,12 @@ class AudioDataset(Dataset):
         row = self.df.iloc[idx]
         file_name = str(row['file_name'])
         transcription = row['transcription']
-        # drop non-wav files
+        
         if not file_name.endswith('.wav'):
-            return {
-                "input_features": torch.zeros(80, 3000),
-                "labels": torch.zeros(1, dtype=torch.long)
-            }
+            return self._get_dummy_sample()
+        
         try:
             audio, sr = librosa.load(os.path.join(self.audio_dir, file_name), sr=16000)
-
             max_samples = int(self.max_length * sr)
             if len(audio) > max_samples:
                 audio = audio[:max_samples]
@@ -115,13 +95,11 @@ class AudioDataset(Dataset):
                 audio,
                 sampling_rate=16000,
                 return_tensors="pt",
-                padding="longest"
             )
 
             labels = self.processor.tokenizer(
                 transcription,
                 return_tensors="pt",
-                padding="longest"
             )
 
             return {
@@ -132,8 +110,8 @@ class AudioDataset(Dataset):
         except Exception as e:
             print(f"error: {file_name}: {e}")
             return {
-                "input_features": torch.zeros(80, 3000),
-                "labels": torch.zeros(1, dtype=torch.long)
+                "input_features": torch.zeros(80, 1),
+                "labels": torch.tensor([self.processor.tokenizer.eos_token_id], dtype=torch.long)
             }
 class Train:
     def __init__(self, dataset = None, model_state_path=None, model_choice=None):
@@ -170,29 +148,6 @@ class Train:
         self.train_dataset = AudioDataset(train_df, dataset_dir, self.processor, max_length=30)
         self.val_dataset = AudioDataset(val_df, dataset_dir, self.processor, max_length=30)
 
-        # data_collator = DataCollatorSpeechSeq2SeqWithPadding(
-        #     processor=self.processor,
-        #     decoder_start_token_id=self.model.config.decoder_start_token_id
-        # )
-
-        # self.train_loader = DataLoader(
-        #     train_dataset,
-        #     batch_size=8,
-        #     shuffle=True,
-        #     collate_fn=data_collator,
-        #     num_workers=4,
-        #     pin_memory=True
-        # )
-
-        # self.val_loader = DataLoader(
-        #     val_dataset,
-        #     batch_size=8,
-        #     shuffle=False,
-        #     collate_fn=data_collator,
-        #     num_workers=4,
-        #     pin_memory=True
-        # )
-
     def setup_trainer(self):
         from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
 
@@ -207,8 +162,8 @@ class Train:
             max_grad_norm=1.0,
 
             learning_rate=1e-5,
-            warmup_steps=1000,
-            lr_scheduler_type="cosine",
+            warmup_steps=500,
+            lr_scheduler_type="linear",
             weight_decay=0.01,
 
             num_train_epochs=5,
@@ -227,11 +182,14 @@ class Train:
             greater_is_better=False,
 
             fp16=True,
-            dataloader_num_workers=2,
+            dataloader_num_workers=4,
+            dataloader_pin_memory=True,
 
             predict_with_generate=True,
             generation_max_length=225,
             push_to_hub=False,
+            
+            generation_config=self.model.generation_config,
         )
         
         def compute_metrics(pred):
@@ -254,7 +212,6 @@ class Train:
             return {"levenshtein": mean_lev}
         data_collator = DataCollatorSpeechSeq2SeqWithPadding(
             processor=self.processor,
-            decoder_start_token_id=self.model.config.decoder_start_token_id
         )
         self.trainer = Seq2SeqTrainer(
             model=self.model,
