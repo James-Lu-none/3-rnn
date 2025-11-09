@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import re
 import functools
+from tqdm import tqdm
 
 TEST_ROOT = "data/test-random"
 OUTPUT_ROOT = "output"
@@ -102,7 +103,7 @@ class prediction:
                 self.valid_words,
                 key=lambda vw: levenshtein(w, vw)
             )
-
+            print(f"Correcting '{w}' to '{nearest}'")
             corrected.append(nearest)
 
         return " ".join(corrected)
@@ -144,14 +145,10 @@ class prediction:
     def transcribe_directory(self):
         rows = []
         
-        for file in sorted(os.listdir(TEST_ROOT)):
-            if not file.lower().endswith(".wav"):
-                continue
-
+        wav_files = sorted([f for f in os.listdir(TEST_ROOT) if f.lower().endswith(".wav")])
+        for file in tqdm(wav_files, desc="Processing audio", unit="file"):
             full_path = os.path.join(TEST_ROOT, file)
             audio_id = os.path.splitext(file)[0]
-
-            print(f"Processing: {file} ...")
 
             sentence = self.transcribe_audio(full_path)
             rows.append({"id": audio_id, "sentence": sentence})
