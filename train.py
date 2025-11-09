@@ -15,7 +15,8 @@ from torch.utils.data import DataLoader
 import json
 import matplotlib.pyplot as plt
 
-DATA_ROOT = "data/train"
+
+BASE = "data/train/train"
 MODEL_ROOT = "model"
 @dataclass
 class DataCollatorSpeechSeq2SeqWithPadding:
@@ -138,7 +139,7 @@ class Train:
         # self.model.to("cuda" if torch.cuda.is_available() else "cpu")
         
     def load_data(self):
-        dataset_dir = f"{DATA_ROOT}/{self.dataset}"
+        dataset_dir = os.path.join(BASE, self.dataset)
         metadata_path = os.path.join(dataset_dir, "metadata.csv")
         print(f"Loading dataset from: {dataset_dir}")
         df = pd.read_csv(metadata_path)

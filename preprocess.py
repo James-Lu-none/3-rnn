@@ -8,15 +8,16 @@ import nlpaug.flow as naf
 import pandas as pd
 from tqdm import tqdm
 
-InPath = "./data/train/train"
-InLabelPath = "./data/train/train-toneless.csv"
+BASE = "./data/train/train"
+InPath = os.path.join(BASE, "train")
+InLabelPath = os.path.join(BASE, "train-toneless.csv")
 
-OutPath = "./data/train/tmp-augmented-audio"
-OutLabelPath = "./data/train/tmp-augmented-audio/metadata.csv"
+OutPath = os.path.join(BASE, "tmp-augmented-audio")
+OutLabelPath = os.path.join(OutPath, "metadata.csv")
 
-background_noises_path = "./data/background_noises"
-short_noises_path = "./data/short_noises"
-rir_path = "./data/rir"
+background_noises_path = os.path.join(BASE, "background_noises")
+short_noises_path = os.path.join(BASE, "short_noises")
+rir_path = os.path.join(BASE, "rir")
 os.makedirs(OutPath, exist_ok=True)
 sr = 16000
 

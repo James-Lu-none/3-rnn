@@ -9,9 +9,11 @@ import re
 import functools
 from tqdm import tqdm
 
-TEST_ROOT = "data/test-random"
+BASE = "data/train/train"
+InLabelPath = os.path.join(BASE, "train-toneless.csv")
+TEST_ROOT = "data/test-random/test-random"
 OUTPUT_ROOT = "output"
-LEXICON_PATH = "data/train/lexicon.txt"
+LEXICON_PATH = os.path.join(BASE, "lexicon.txt")
 
 os.makedirs(OUTPUT_ROOT, exist_ok=True)
 
@@ -48,7 +50,7 @@ class prediction:
 
     def get_valid_words(self):
         # extract words from training CSV file
-        df = pd.read_csv("data/train/train-toneless.csv")
+        df = pd.read_csv(InLabelPath)
 
         words_from_csv = []
 

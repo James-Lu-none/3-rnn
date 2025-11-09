@@ -4,7 +4,8 @@ from tokenizers.pre_tokenizers import Whitespace
 from tokenizers.processors import TemplateProcessing
 import json
 
-LEXICON_PATH = "data/train/lexicon.txt"
+BASE = "./data/train/train"
+LEXICON_PATH = os.path.join(BASE, "lexicon.txt")
 OUTPUT_DIR = "taiwanese_tokenizer"
 
 import os
