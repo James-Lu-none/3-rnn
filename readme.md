@@ -58,6 +58,39 @@ python3 prediction.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10
 python3 visualization.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10_0.0213 --dataset train
 ```
 
+## Augmentation examples
+
+1. Background Noises
+https://github.com/karoldvl/ESC-50/archive/master.zip
+
+```
+cd data
+unzip master.zip
+mv ESC-50-master/audio/ background_noises
+```
+
+2. Short Noises (transient sounds)
+FSD50K: Contains short impulse sounds like clicks, pops, coughs
+BBC Sound Effects Library: <https://sound-effects.bbcrewind.co.uk/>
+Free for personal/educational use
+Door slams, clicks, coughs, etc.
+Freesound.org: <https://freesound.org/>
+Community-contributed sounds (check licenses)
+Search for: clicks, pops, coughs, snaps, claps
+3. Room Impulse Responses (RIR)
+Dedicated RIR Datasets:
+MIT Acoustical Reverberation Scene Statistics Survey: <https://mcdermottlab.mit.edu/Reverb/IR_Survey.html>
+271 impulse responses from various rooms
+OpenAIR: <https://www.openair.hosted.york.ac.uk/>
+High-quality impulse responses
+Concert halls, churches, studios, outdoor spaces
+EchoThief: <http://www.echothief.com/>
+Free impulse responses of real spaces
+BIRD (BInaural Room impulse response Database): <https://github.com/FrancoisGrondin/BIRD>
+Binaural room impulse responses
+BUT ReverbDB: <https://speech.fit.vutbr.cz/software/but-speech-fit-reverb-database>
+Room impulse responses from various environments
+
 ## results
 
 ### openai_whisper_small
