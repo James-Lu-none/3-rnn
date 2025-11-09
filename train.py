@@ -12,6 +12,8 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 from models import *
 from torch.utils.data import DataLoader
+import json
+import matplotlib.pyplot as plt
 
 DATA_ROOT = "data/train"
 MODEL_ROOT = "model"
@@ -241,6 +243,45 @@ class Train:
         os.makedirs(save_dir, exist_ok=True)
         self.trainer.save_model(save_dir)
         self.processor.save_pretrained(save_dir)
+
+        print("Saving metrics to CSV and plots...")
+        log_history = self.trainer.state.log_history
+        json_path = os.path.join(save_dir, "metrics.json")
+        with open(json_path, "w") as f:
+            json.dump(log_history, f, indent=2)
+
+        df = pd.DataFrame(log_history)
+
+        csv_path = os.path.join(save_dir, "metrics.csv")
+        df.to_csv(csv_path, index=False)
+        print(f"Metrics saved to: {csv_path}")
+
+        plt.figure()
+        if "loss" in df.columns:
+            plt.plot(df["step"], df["loss"], label="train_loss")
+        if "eval_loss" in df.columns:
+            plt.plot(df["step"], df["eval_loss"], label="eval_loss")
+
+        plt.xlabel("Step")
+        plt.ylabel("Loss")
+        plt.title("Training / Evaluation Loss")
+        plt.legend()
+        plt.tight_layout()
+        loss_plot_path = os.path.join(save_dir, "loss_plot.png")
+        plt.savefig(loss_plot_path, dpi=150)
+        plt.close()
+        print(f"Loss plot saved to: {loss_plot_path}")
+
+        plt.figure()
+        plt.plot(df["step"], df["eval_levenshtein"], marker="o")
+        plt.xlabel("Step")
+        plt.ylabel("Normalized Levenshtein")
+        plt.title("Levenshtein Distance over Training")
+        plt.tight_layout()
+        lev_plot_path = os.path.join(save_dir, "levenshtein_plot.png")
+        plt.savefig(lev_plot_path, dpi=150)
+        plt.close()
+        print(f"Levenshtein plot saved to: {lev_plot_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
