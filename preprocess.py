@@ -28,11 +28,11 @@ augment2 = Compose([
     AddGaussianSNR(min_snr_db=10, max_snr_db=30, p=0.2),
     TimeStretch(min_rate=0.8, max_rate=1.2, leave_length_unchanged=False, p=0.4),
     PitchShift(min_semitones=-4, max_semitones=4, p=0.4),
-    AddBackgroundNoise(
-        sounds_path=background_noises_path,
-        min_snr_db=10,
-        max_snr_db=30.0,
-        p=0.4),
+    # AddBackgroundNoise(
+    #     sounds_path=background_noises_path,
+    #     min_snr_db=10,
+    #     max_snr_db=30.0,
+    #     p=0.4),
     # AddShortNoises(
     # sounds_path=short_noises_path,
     # min_snr_db=10,
