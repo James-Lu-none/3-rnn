@@ -23,32 +23,24 @@
 ├── prediction.py
 ├── preprocess.py
 ├── readme.md
-├── sox.sh
 ├── train.py
 └── visualization.py
 ```
 
 ## command examples
 
-first, execute bash sox.sh to preprocess audio files and use preprocess.py to perform data argumentation
-
 ```bash
-# use sox to preprocess audio files to 16kHz sampling, single integer, 16 bits 
-# input path: ./data/train/train
-# output path: ./data/train/fixed-train
-bash sox.sh
-
 # perform training data argumentation from 
-# InPath = "./data/train/fixed-train"
+# InPath = "./data/train/train"
 # InLabelPath = "./data/train/train-toneless.csv"
 # to
-# OutPath = "./data/train/noisy-train"
-# OutLabelPath = "./data/train/noisy-train/metadata.csv"
+# OutPath = "./data/train/tmp-augmented-audio"
+# OutLabelPath = "./data/train/tmp-augmented-audio/metadata.csv"
+# during the aumentation, all audio files are resampled to 16kHz
 python preprocess.py
 
-# use dataset "noisy-train" to train model
-python3 train.py --dataset noisy-train --model_choice openai_whisper_small
-
+# use dataset "tmp-augmented-audio" to train model
+python3 train.py --dataset tmp-augmented-audio --model_choice openai_whisper_small
 # predict on test data without lexicon
 python3 prediction.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10_0.0213
 # predict on test data with lexicon
