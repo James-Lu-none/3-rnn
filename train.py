@@ -134,8 +134,13 @@ class Train:
 
     def load_model(self):
         try:
-            model_fn = globals()[self.model_choice]
-            self.processor, self.model = model_fn()
+            if self.model_state_path is not None:
+                print(f"Loading model state from: {self.model_state_path}")
+                self.processor, self.model = custom(self.model_state_path)
+            else:
+                print(f"Loading model: {self.model_choice}")
+                model_fn = globals()[self.model_choice]
+                self.processor, self.model = model_fn()
         except KeyError:
             raise ValueError(f"Unknown model choice: {self.model_choice}")
         # self.model.to("cuda" if torch.cuda.is_available() else "cpu")
@@ -290,11 +295,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--model_choice", type=str, required=True)
+    parser.add_argument("--model_state_path", type=str, default=None)
     args = parser.parse_args()
 
     trainer = Train(
         dataset=args.dataset,
-        model_choice=args.model_choice
+        model_choice=args.model_choice,
+        model_state_path=args.model_state_path
     )
 
     trainer.run()

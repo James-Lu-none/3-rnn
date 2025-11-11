@@ -121,3 +121,21 @@ def openai_whisper_large_v3_turbo():
     model.config.suppress_tokens = []
     
     return processor, model
+
+def custom(model_dir):
+    processor = AutoProcessor.from_pretrained(
+        model_dir,
+        local_files_only=True,
+        task="transcribe"
+    )
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(
+        model_dir,
+        local_files_only=True
+    )
+    model.config.use_cache = False
+    model.generation_config.task = "transcribe"
+    model.generation_config.language = None
+    model.config.forced_decoder_ids = None
+    model.config.suppress_tokens = []
+    
+    return processor, model
