@@ -82,12 +82,11 @@ submit score: 8.43434
 [eval with normalized Levenshtein distance & apply lexicon]()
 submit score: 
 
-[eval with normalized Levenshtein distance + train with TPGBIR augmentation (3x augs, 10 epoch)](history/openai_whisper_small_2025-11-10T17-31-06_0.0597_2025-11-10T17-32-28.csv)
+[eval with normalized Levenshtein distance + train with TPGBIR augmentation (3x augs, 25 epoch)](history/openai_whisper_small_2025-11-10T17-31-06_0.0597_2025-11-10T17-32-28.csv)
 submit score: 5.93939
 
 [eval with normalized Levenshtein distance + train with TPGBIR augmentation (5x augs, 10 epoch)](history/openai_whisper_small_2025-11-10T21-57-21_0.0380_2025-11-10T21-58-44.csv)
 submit score: 4.98989
-
 
 ### openai_whisper_medium
 
