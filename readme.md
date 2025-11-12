@@ -94,13 +94,17 @@ submit score: 5.67676
 [eval with normalized Levenshtein distance + train with train_TPGBIR augmentation (5x augs, 10 epoch) + train with dict-sentence_TPGBIR augmentation (1x augs, 10 epoch) + train with train_TPGBIR augmentation (5x augs, 10 epoch)](history/openai_whisper_small_2025-11-12T07-55-19_0.0282_2025-11-12T07-56-40.csv)
 submit score: 4.33333
 
+[eval with normalized Levenshtein distance + train with train_TPGBIR augmentation (5x augs, 10 epoch) + train with dict-sentence_TPGBIR augmentation (1x augs, 10 epoch) + train with train_TPGBIR augmentation (5x augs, 10 epoch) + train with dict-word_TPGBIR augmentation (1x augs, 10 epoch)](history/openai_whisper_small_2025-11-12T14-29-42_0.0308_2025-11-12T14-31-05.csv)
+submit score: 6.10101
+
+
 stage-wise training plots:
 
-| | stage 0 (train_TPGBIR 5x) | stage 1 (dict-sentence_TPGBIR 1x) | stage 2 (train_TPGBIR 5x) |
-|---|---|---|---|
-| levenshtein distance | ![stage 0](history/0/levenshtein_plot.png) | ![stage 1](history/1/levenshtein_plot.png) | ![stage 2](history/2/levenshtein_plot.png)
-| loss | ![stage 0](history/0/loss_plot.png) | ![stage 1](history/1/loss_plot.png) | ![stage 2](history/2/loss_plot.png) |
-| submit score | 4.98989 | 5.67676 | 4.33333 |
+| | stage 0 (train_TPGBIR 5x) | stage 1 (dict-sentence_TPGBIR 1x) | stage 2 (train_TPGBIR 5x) | stage 3 (dict-word_TPGBIR 1x) |
+|---|---|---|---|---|
+| levenshtein distance | ![stage 0](history/0/levenshtein_plot.png) | ![stage 1](history/1/levenshtein_plot.png) | ![stage 2](history/2/levenshtein_plot.png) | ![stage 3](history/3/levenshtein_plot.png) |
+| loss | ![stage 0](history/0/loss_plot.png) | ![stage 1](history/1/loss_plot.png) | ![stage 2](history/2/loss_plot.png) | ![stage 3](history/3/loss_plot.png) |
+| submit score | 4.98989 | 5.67676 | 4.33333 | 6.10101 |
 
 ### openai_whisper_medium
 
