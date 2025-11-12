@@ -176,7 +176,7 @@ class Train:
             lr_scheduler_type="linear",
             weight_decay=0.01,
 
-            num_train_epochs=10,
+            num_train_epochs=5,
 
             eval_strategy="steps",
             eval_steps=300,
