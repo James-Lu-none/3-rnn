@@ -126,6 +126,13 @@ in a model dir:
 └── vocab.json
 
 #### terms
+
+```python
+total_steps = (num_train_epochs) * ceil(len(train_dataset) / effective_batch_size)
+
+effective_batch_size = per_device_train_batch_size *gradient_accumulation_steps* num_devices
+```
+
 - decoder_start_token_id
 in original tokenizer, model.config.decoder_start_token_id is "<|startoftranscript|>": 50258, in my custom tokenizer, i use `<s>` and `</s>` as bos and eos token
 
