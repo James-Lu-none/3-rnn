@@ -29,7 +29,7 @@ InPath = os.path.join(BASE, args.src_dir)
 InLabelPath = os.path.join(BASE, args.label_file)
 OutPath = os.path.join(BASE, args.dist_dir)
 OutLabelPath = os.path.join(OutPath, "metadata.csv")
-os.makedirs(OutPath, exist_ok=True)
+
 
 print("generating augmented data for type:", args.aug_type)
 print("input path:", InPath)
@@ -40,8 +40,9 @@ print("number of augmentations per file:", args.n_augmentations)
 
 if args.aug_type not in ["TPG", "TPGB", "TPGBIR"]:
     raise ValueError("Invalid dataset name. Choose from: TPG, TPGB, TPGBIR")
-os.system(f"rm -rf ./data/train/train/{args.aug_type}")
-    
+os.system(f"rm -rf {OutPath}")
+os.makedirs(OutPath, exist_ok=True)
+
 sr = 16000
 
 augment1 = naf.Sometimes([
