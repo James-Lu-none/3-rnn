@@ -182,7 +182,7 @@ class Train:
             eval_steps=300,
             save_strategy="steps",
             save_steps=300,
-            save_total_limit=5,
+            save_total_limit=1,
 
             logging_steps=50,
             logging_dir="./logs",
