@@ -80,7 +80,7 @@ submit score: 9.87878
 submit score: 8.43434
 
 [eval with normalized Levenshtein distance & apply lexicon]()
-submit score: 
+submit score: not better since lexicon is not complete and some words are in english
 
 [eval with normalized Levenshtein distance + train with TPGBIR augmentation (3x augs, 25 epoch)](history/openai_whisper_small_2025-11-10T17-31-06_0.0597_2025-11-10T17-32-28.csv)
 submit score: 5.93939
@@ -97,6 +97,11 @@ submit score: 4.33333
 [eval with normalized Levenshtein distance + train with train_TPGBIR augmentation (5x augs, 10 epoch) + train with dict-sentence_TPGBIR augmentation (1x augs, 10 epoch) + train with train_TPGBIR augmentation (5x augs, 10 epoch) + train with dict-word_TPGBIR augmentation (1x augs, 10 epoch)](history/openai_whisper_small_2025-11-12T14-29-42_0.0308_2025-11-12T14-31-05.csv)
 submit score: 6.10101
 
+[eval with normalized Levenshtein distance + train with hybrid_TPGBIR (1x dict-sentence + 1x dict-word + 5x train) augmentation (5 epoch)](history/openai_whisper_small_2025-11-14T01-06-49_0.0274_2025-11-14T01-08-11.csv)
+submit score: 4.06060
+
+[eval with WER + train with hybrid_TPGBIR (1x dict-sentence + 1x dict-word + 5x train) augmentation (5 epoch)]()
+submit score: 
 
 stage-wise training plots:
 
@@ -160,7 +165,7 @@ Sample 1:
   labels: [15]                ← 15 tokens
 
 Sample 2:
-  input_features: [80, 1842]  ← 1842 time steps (1.84 sec audio)
+  input_features: [80, 1842]  ← 1842 time steps (1.84 se=c audio)
   labels: [28]                ← 28 tokens
 
 Sample 3:
