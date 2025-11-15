@@ -41,15 +41,18 @@ run pipeline.ipynb or run commands below step by step:
 # during the aumentation, all audio files are resampled to 16kHz
 python preprocess.py
 
-# use dataset "tmp-augmented-audio" to train model
-python3 train.py --dataset tmp-augmented-audio --model_choice openai_whisper_small
+# use dataset "tmp-augmented-audio" to train model "openai_whisper_small" with evaluation function "wer"
+python3 train.py --dataset tmp-augmented-audio --model_choice openai_whisper_small --eval_function wer
+# continue with pre-trained state and use dataset "tmp-augmented-audio" to train model "openai_whisper_small" with evaluation function "lev"
+python3 train.py --dataset tmp-augmented-audio --model_choice openai_whisper_small --model_state_path model/openai_whisper_small/2025-11-08T11-10-10_0.0213 --eval_function lev
+
 # predict on test data without lexicon
 python3 prediction.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10_0.0213
 # predict on test data with lexicon
 python3 prediction.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10_0.0213 --use_lexicon
 
 # visualize confusion matrix with a pretrained model state
-python3 visualization.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10_0.0213 --dataset train
+python3 visualization.py --model_dir model/openai_whisper_small/2025-11-08T11-10-10_0.0213
 ```
 
 ## Augmentation examples
