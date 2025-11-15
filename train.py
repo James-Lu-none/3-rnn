@@ -161,14 +161,14 @@ class Train:
 
     def setup_trainer(self):
         from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
-
+        
         os.environ["WANDB_PROJECT"] = "whisper-finetune-project"
         args = Seq2SeqTrainingArguments(
             output_dir=f"{MODEL_ROOT}/{self.model_choice}",
 
             per_device_train_batch_size=4,
             per_device_eval_batch_size=4,
-            gradient_accumulation_steps=4,
+            gradient_accumulation_steps=16,
 
             max_grad_norm=1.0,
 
@@ -189,7 +189,7 @@ class Train:
             logging_dir="./logs",
 
             load_best_model_at_end=True,
-            metric_for_best_model="levenshtein",
+            metric_for_best_model="wer",
             greater_is_better=False,
             
             dataloader_num_workers=4,
@@ -220,6 +220,20 @@ class Train:
             mean_lev = float(sum(distances) / len(distances))
 
             return {"levenshtein": mean_lev}
+        
+        wer = evaluate.load("wer")
+        def compute_metrics_wer(pred):
+            pred_ids = pred.predictions
+            label_ids = pred.label_ids
+
+            label_ids[label_ids == -100] = self.processor.tokenizer.pad_token_id
+
+            pred_str = self.processor.tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+            label_str = self.processor.tokenizer.batch_decode(label_ids, skip_special_tokens=True)
+
+            wer_score = wer.compute(predictions=pred_str, references=label_str)
+
+            return {"wer": wer_score}
         data_collator = DataCollatorSpeechSeq2SeqWithPadding(
             processor=self.processor,
         )
@@ -230,7 +244,7 @@ class Train:
             eval_dataset=self.val_dataset,
             tokenizer=self.processor.feature_extractor,
             data_collator=data_collator,
-            compute_metrics=compute_metrics,
+            compute_metrics=compute_metrics_wer,
         )
 
     def run(self):
