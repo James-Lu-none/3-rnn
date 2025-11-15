@@ -100,8 +100,10 @@ submit score: 6.10101
 [eval with normalized Levenshtein distance + train with hybrid_TPGBIR (1x dict-sentence + 1x dict-word + 5x train) augmentation (5 epoch)](history/openai_whisper_small_2025-11-14T01-06-49_0.0274_2025-11-14T01-08-11.csv)
 submit score: 4.06060
 
-[eval with WER + train with hybrid_TPGBIR (1x dict-sentence + 1x dict-word + 5x train) augmentation (5 epoch)]()
-submit score: 
+### openai_whisper_large_v3_turbo
+
+[eval with WER + train with hybrid_TPGBIR (1x dict-sentence + 1x dict-word + 5x train) augmentation (5 epoch)](history/openai_whisper_large_v3_turbo_2025-11-15T07-08-22_0.0294_2025-11-15T09-04-34.csv)
+submit score: 2.84848
 
 stage-wise training plots:
 
