@@ -119,7 +119,7 @@ class AudioDataset(Dataset):
                 "labels": torch.tensor([self.processor.tokenizer.eos_token_id], dtype=torch.long)
             }
 class Train:
-    def __init__(self, dataset = None, model_state_path=None, model_choice=None):
+    def __init__(self, dataset = None, model_state_path=None, model_choice=None, eval_function="lev"):
         self.model_choice = model_choice
         self.model_state_path = model_state_path
         self.dataset = dataset
@@ -130,6 +130,7 @@ class Train:
         self.train_dataset = None
         self.eval_dataset = None
         self.trainer = None
+        self.eval_function = eval_function
         os.makedirs(os.path.join(MODEL_ROOT,self.model_choice), exist_ok=True)
 
     def load_model(self):
@@ -189,7 +190,7 @@ class Train:
             logging_dir="./logs",
 
             load_best_model_at_end=True,
-            metric_for_best_model="wer",
+            metric_for_best_model=self.eval_function,
             greater_is_better=False,
             
             dataloader_num_workers=4,
@@ -202,7 +203,7 @@ class Train:
             generation_config=self.model.generation_config,
         )
         
-        def compute_metrics(pred):
+        def compute_metrics_lev(pred):
             pred_ids = pred.predictions
             label_ids = pred.label_ids
 
@@ -219,10 +220,10 @@ class Train:
 
             mean_lev = float(sum(distances) / len(distances))
 
-            return {"levenshtein": mean_lev}
+            return {"lev": mean_lev}
         
-        wer = evaluate.load("wer")
         def compute_metrics_wer(pred):
+            wer = evaluate.load("wer")
             pred_ids = pred.predictions
             label_ids = pred.label_ids
 
@@ -237,6 +238,14 @@ class Train:
         data_collator = DataCollatorSpeechSeq2SeqWithPadding(
             processor=self.processor,
         )
+        compute_metrics = None
+        if self.eval_function == "wer":
+            compute_metrics = compute_metrics_wer
+        elif self.eval_function == "lev":
+            compute_metrics = compute_metrics_lev
+        else:
+            raise ValueError(f"Unknown eval_function: {self.eval_function}")
+        
         self.trainer = Seq2SeqTrainer(
             model=self.model,
             args=args,
@@ -244,7 +253,7 @@ class Train:
             eval_dataset=self.val_dataset,
             tokenizer=self.processor.feature_extractor,
             data_collator=data_collator,
-            compute_metrics=compute_metrics_wer,
+            compute_metrics=compute_metrics,
         )
 
     def run(self):
@@ -295,27 +304,29 @@ class Train:
         print(f"Loss plot saved to: {loss_plot_path}")
 
         plt.figure()
-        plt.plot(df["step"], df["eval_levenshtein"], marker="o")
+        plt.plot(df["step"], df[self.eval_function], marker="o")
         plt.xlabel("Step")
-        plt.ylabel("Normalized Levenshtein")
-        plt.title("Levenshtein Distance over Training")
+        plt.ylabel(f"Normalized {self.eval_function}")
+        plt.title(f"{self.eval_function} Distance over Training")
         plt.tight_layout()
-        lev_plot_path = os.path.join(save_dir, "levenshtein_plot.png")
+        lev_plot_path = os.path.join(save_dir, f"{self.eval_function}_plot.png")
         plt.savefig(lev_plot_path, dpi=150)
         plt.close()
-        print(f"Levenshtein plot saved to: {lev_plot_path}")
+        print(f"{self.eval_function} plot saved to: {lev_plot_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--model_choice", type=str, required=True)
     parser.add_argument("--model_state_path", type=str, default=None)
+    parser.add_argument("--eval_function", type=str, default="lev", help="Evaluation function to use: 'lev' or 'wer'")
     args = parser.parse_args()
 
     trainer = Train(
         dataset=args.dataset,
         model_choice=args.model_choice,
-        model_state_path=args.model_state_path
+        model_state_path=args.model_state_path,
+        eval_function=args.eval_function
     )
 
     trainer.run()
