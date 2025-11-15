@@ -1,7 +1,8 @@
 *.xlsx
 *.csv
 __pycache__
-model
-data
+model/
+data/
 !history/*
-image
+image/
+visualization/
