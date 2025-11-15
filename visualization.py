@@ -194,6 +194,13 @@ class visualization:
         annot_values = annot_values[np.ix_(sort_idx, sort_idx)]
         labels = [labels[i] for i in sort_idx]
 
+        # only take top n for better visualization
+        n = 50
+        if len(labels) > n:
+            labels = labels[:n]
+            cm = cm[:n, :n]
+            annot_values = annot_values[:n, :n]
+
         plt.figure(figsize=(max(8, len(labels) * 0.6), max(6, len(labels) * 0.6)))
         # heatmap color follows the normalized values
         sns.heatmap(annot_values, annot=cm, fmt="d", xticklabels=labels, yticklabels=labels, cmap="Blues")
